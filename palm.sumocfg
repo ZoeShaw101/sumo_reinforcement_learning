@@ -13,9 +13,9 @@
         <end value="86400"/>
     </time>
 
-    <gui_only>
+    <!-- <gui_only>
         <gui-settings-file value="palm.settings.xml"/>
-    </gui_only>
+    </gui_only> -->
 
 </configuration>
 
