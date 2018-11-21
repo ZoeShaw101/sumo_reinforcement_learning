@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import heapq
 
-import arrivalRateGen
+# import arrivalRateGen
 
 import sklearn
 from sklearn.cluster import KMeans
@@ -30,7 +30,7 @@ from sklearn import datasets
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-import ggplot as gg
+# import ggplot as gg
 
 """				PARAMETERS 					"""
 
@@ -119,27 +119,27 @@ for edge in listEdges:
 	numVehiclesTracker[edge] = 0
 	# meanSpeedTracker[edge] = 0
 
-# queueBuckets = [3,6] # actually the boundaries of the buckets
-# waitingBuckets = [35,120] # actually the boundaries of the buckets
+queueBuckets = [3,6] # actually the boundaries of the buckets
+waitingBuckets = [35,120] # actually the boundaries of the buckets
 
-# stateCols = ('phase', '8949170_q', '8949170_w', '-164126513_q', '-164126513_w',\
-# 		 '52016249_q', '52016249_w', '-164126511_q','-164126511_w')
+stateCols = ('phase', '8949170_q', '8949170_w', '-164126513_q', '-164126513_w',\
+		 '52016249_q', '52016249_w', '-164126511_q','-164126511_w')
 
-# dfStateMapping = pd.DataFrame(columns=stateCols)
-# for p in range(numPhasesForAction):
-# 	print 'p = ', p
-# 	for e1q in range(numQueueSizeBuckets):
-# 		for e1w in range (numwaitingBuckets):
-# 			for e2q in range(numQueueSizeBuckets):
-# 				for e2w in range (numwaitingBuckets):
-# 					for e3q in range(numQueueSizeBuckets):
-# 						for e3w in range (numwaitingBuckets):
-# 							for e4q in range(numQueueSizeBuckets):
-# 								for e4w in range (numwaitingBuckets):
-# 									df = pd.DataFrame([[p, e1q, e1w, e2q, e2w, e3q, e3w,e4q, e4w]], columns = stateCols)
-# 									dfStateMapping = dfStateMapping.append(df, ignore_index=True)
-# dfStateMapping['stateNum'] = dfStateMapping.index
-# dfStateMapping.to_csv('dfStateMapping.csv')
+dfStateMapping = pd.DataFrame(columns=stateCols)
+for p in range(numPhasesForAction):
+	print 'p = ', p
+	for e1q in range(numQueueSizeBuckets):
+		for e1w in range (numwaitingBuckets):
+			for e2q in range(numQueueSizeBuckets):
+				for e2w in range (numwaitingBuckets):
+					for e3q in range(numQueueSizeBuckets):
+						for e3w in range (numwaitingBuckets):
+							for e4q in range(numQueueSizeBuckets):
+								for e4w in range (numwaitingBuckets):
+									df = pd.DataFrame([[p, e1q, e1w, e2q, e2w, e3q, e3w,e4q, e4w]], columns = stateCols)
+									dfStateMapping = dfStateMapping.append(df, ignore_index=True)
+dfStateMapping['stateNum'] = dfStateMapping.index
+dfStateMapping.to_csv('dfStateMapping.csv')
 
 dfStateMapping = pd.DataFrame.from_csv('dfStateMapping.csv')
 
@@ -248,6 +248,8 @@ listMeanObjVals = []
 listMedianObjVals = []
 listMinObjVals = []
 
+sumoBinary = "/Users/shaw/Desktop/Simulation/sumo-git/bin/sumo"
+
 def learnDiscretization(daysToTrain):
 	# """							SIMULATION 					"""
 	dynamic = 0
@@ -263,9 +265,9 @@ def learnDiscretization(daysToTrain):
 	for day in range(totalDays): # range(len(epsilons)+1): #len(alphas)
 		
 		# generate the random route schedule for the day
-		arrivalRateGen.writeRoutes(day+1)
+		# arrivalRateGen.writeRoutes(day+1)
 
-		sumoProcess = subprocess.Popen(['sumo-gui.exe', "-c", "palm.sumocfg", \
+		sumoProcess = subprocess.Popen([sumoBinary, "-c", "palm.sumocfg", \
 			"--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
 		# sumoProcess = subprocess.Popen(['sumo.exe', "-c", "palm.sumocfg", "--fcd-output", \

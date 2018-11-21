@@ -1,3 +1,5 @@
+# using encoding=utf-8
+
 """
 FILENAME: controller.py
 controller.py is the client and SUMO is the server
@@ -9,6 +11,16 @@ PORT = 8813
 """				LIBRARIES 					"""
 
 import os, sys
+
+if 'SUMO_HOME' in os.environ:
+     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+     sys.path.append(tools)
+else:   
+     sys.exit("please declare environment variable 'SUMO_HOME'")
+
+sumoBinary = "/Users/shaw/Desktop/Simulation/sumo-git/bin/sumo"
+
+
 import subprocess
 import traci
 import random
@@ -19,7 +31,6 @@ import numpy as np
 from numpy import random
 import numpy.matlib
 import matplotlib.pyplot as plt
-import ggplot as gg
 
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -29,8 +40,10 @@ import heapq
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-import arrivalRateGen
+# import arrivalRateGen
 import getDiscreteStates
+
+
 
 """				PARAMETERS 					"""
 
@@ -51,8 +64,9 @@ minPhaseTime = 4
 maxPhaseTime = 36
 yellowPhaseTime = 4
 
-actionsForStraightPhase = [10, 14, 18, 22, 26, 30, 34, 38] # number of seconds to run an actionPhase
-actionsForLeftPhase = [3,4,5,6,7,8,9,10]
+## 动作集合：
+actionsForStraightPhase = [10, 14, 18, 22, 26, 30, 34, 38] # number of seconds to run an actionPhase 直行的这个相位维持多少秒
+actionsForLeftPhase = [3,4,5,6,7,8,9,10]  ##左转的这个相位维持多少秒
 
 global numActions
 numActions = len(actionsForStraightPhase)
@@ -60,7 +74,7 @@ numActionsForStraightPhase = len(actionsForStraightPhase) #10
 numActionsForLeftPhase = len(actionsForLeftPhase)
 
 
-"""				STATE DISCRETIZATION / INITIAL LEARNING 		"""
+"""	得到连续状态空间离散化		STATE DISCRETIZATION / INITIAL LEARNING 		"""
 
 getDiscreteStates.learnDiscretization(3)
 getDiscreteStates.plotClusterHistograms()
@@ -68,6 +82,7 @@ dictClusterObjects = getDiscreteStates.getDictClusterObjects() # IN: hour (int),
 mapDiscreteStates = getDiscreteStates.getMapDiscreteStates() # IN, hour (int), phase (int), stateSubID (int); OUT: stateID
 invMapDicreteStates = getDiscreteStates.getInvMapDiscreteStates()
 numClustersTracker = getDiscreteStates.getNumClustersTracker()
+
 numStates = 0
 for h in range(hoursInDay):
 	for a in actionPhases:
@@ -99,13 +114,14 @@ listLanes = ['8949170_0', '8949170_1', \
 			'52016249_0', '52016249_1',\
 			'-164126511_0', '-164126511_1']
 
-listEdges = ['8949170', '-164126513', '52016249', '-164126511']
+listEdges = ['8949170', '-164126513', '52016249', '-164126511']  ##4个干道，每个干道两条lane
 tupEdges = ('8949170', '-164126513', '52016249', '-164126511')
 # (south (palm), north (palm), west (arboretum), east (arboretum))
 
-laneQueueTracker = {}
-laneWaitingTracker = {}
-laneNumVehiclesTracker = {}
+""" 度量指标 """
+laneQueueTracker = {}  ##排队队列长度
+laneWaitingTracker = {}  ##车辆等待累积时长
+laneNumVehiclesTracker = {}  ##道路的车辆数
 for lane in listLanes:
 	laneQueueTracker[lane] = 0
 	laneWaitingTracker[lane] = 0
@@ -124,6 +140,7 @@ stateCols = ('phase', '8949170_q', '8949170_w', '-164126513_q', '-164126513_w',\
 
 """				HELPER FUNCTIONS 				"""
 
+### 目标函数：以此来度量交通指标
 def computeObjValue(queueTracker, waitingTracker):
 	currObjValue = 0
 	for key in listEdges:
@@ -133,6 +150,7 @@ def computeObjValue(queueTracker, waitingTracker):
 # TODO - these are the values for beta and theta that we need to select for the objective function
 # plot this on the 3D plot and see if it makes sense to the decision maker
 
+###得到离散的状态id
 def getStateID(currHod, phase, queueTracker, numVehiclesTracker, waitingTracker):
 	stateData = []
 	for edge in listEdges:
@@ -199,7 +217,7 @@ currStateID = 0
 lastStateID = 0
 
 dynamic = 1
-totalDays = 60
+totalDays = 60  ###跑60天
 
 # learning rates and discount factors
 gamma = 0.95 # to do - drop gamma down a little bit?
@@ -207,13 +225,13 @@ gamma = 0.95 # to do - drop gamma down a little bit?
 for day in range(totalDays): 
 
 	# generate the random route schedule for the day
-	arrivalRateGen.writeRoutes(day+1)
+	# arrivalRateGen.writeRoutes(day+1)
 
-	sumoProcess = subprocess.Popen(['sumo-gui.exe', "-c", "palm.sumocfg", \
+	sumoProcess = subprocess.Popen([sumoBinary, "-c", "palm.sumocfg", \
 		"--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
-# 	# sumoProcess = subprocess.Popen(['sumo.exe', "-c", "palm.sumocfg", "--fcd-output", \
-# 	# 	"out.fcd.xml", "--tripinfo-output", "out.trip.xml", "--summary", "out.summary.xml", "--queue-output", "out.queue.xml", "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
+    # sumoProcess = subprocess.Popen(['sumo.exe', "-c", "palm.sumocfg", "--fcd-output", \
+    # 	"out.fcd.xml", "--tripinfo-output", "out.trip.xml", "--summary", "out.summary.xml", "--queue-output", "out.queue.xml", "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
 	traci.init(PORT)
 
@@ -291,7 +309,7 @@ for day in range(totalDays):
 
 			currStateID = getStateID(currHod, currPhaseID, queueTracker, numVehiclesTracker, waitingTracker)
 
-			# collect the currObjValue (reward) based on the current state; larger is better
+			# collect the currObjValue (reward) based on the current state; larger is better  目标函数就是环境的奖励或者惩罚！
 
 			currObjValue = computeObjValue(queueTracker, waitingTracker)
 
@@ -336,6 +354,7 @@ for day in range(totalDays):
 				probsActions =  np.cumsum(QProbs[currStateID,])
 				# print 'probsActions = ', probsActions
 
+				## 以一定的概率取这个动作
 				for i in range(len(probsActions)):
 					if unigen <= probsActions[i]:
 						action = i # i maps to some second value that we want to run this phase for
