@@ -139,7 +139,7 @@ for p in range(numPhasesForAction):
 									df = pd.DataFrame([[p, e1q, e1w, e2q, e2w, e3q, e3w,e4q, e4w]], columns = stateCols)
 									dfStateMapping = dfStateMapping.append(df, ignore_index=True)
 dfStateMapping['stateNum'] = dfStateMapping.index
-dfStateMapping.to_csv('dfStateMapping.csv')
+# dfStateMapping.to_csv('dfStateMapping.csv')
 
 dfStateMapping = pd.DataFrame.from_csv('dfStateMapping.csv')
 
@@ -449,7 +449,7 @@ def learnDiscretization(daysToTrain):
 
 		traci.close() # TODO - fix; need to figure out how to plot multiple with different x-axes
 
-		print 'dfObjVals = ', dfObjVals
+		# print 'dfObjVals = ', dfObjVals
 
 		dfMean = dfObjVals.mean(axis = 0)
 		meanObjVal = dfMean[1]
@@ -468,9 +468,9 @@ def learnDiscretization(daysToTrain):
 	for h in range(hoursInDay): #TODo - change to hoursInDay
 		for a in actionPhases:
 			numClustersTracker[h][a] = int(sum(np.std(stateData[h][a], axis = 0))) #
-			print 'h = ', h
-			print 'a = ', a
-			print 'numClustersTracker[h][a] = ', numClustersTracker[h][a]
+			# print 'h = ', h
+			# print 'a = ', a
+			# print 'numClustersTracker[h][a] = ', numClustersTracker[h][a]
 
 			dictClusterObjects[h][a] = KMeans(n_clusters = numClustersTracker[h][a])
 			dictClusterObjects[h][a].fit(stateData[h][a])

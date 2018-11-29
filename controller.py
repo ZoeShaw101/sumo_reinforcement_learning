@@ -98,7 +98,8 @@ print 'baselineMedian = ', baselineMedian
 baselineMin = getDiscreteStates.getBaselineMin()
 print 'baselineMin = ', baselineMin 
 
-"""				COLLECTIONS					"""
+
+"""		Q值表		COLLECTIONS					"""
 
 global QValues, QCounts, QProbs, QAlphas
 QValues = np.zeros((numStates,numActions)) # all state action pairs
@@ -118,7 +119,7 @@ listEdges = ['8949170', '-164126513', '52016249', '-164126511']  ##4个干道，
 tupEdges = ('8949170', '-164126513', '52016249', '-164126511')
 # (south (palm), north (palm), west (arboretum), east (arboretum))
 
-""" 度量指标 """
+""" 交通性能度量指标 """
 laneQueueTracker = {}  ##排队队列长度
 laneWaitingTracker = {}  ##车辆等待累积时长
 laneNumVehiclesTracker = {}  ##道路的车辆数
@@ -160,6 +161,7 @@ def getStateID(currHod, phase, queueTracker, numVehiclesTracker, waitingTracker)
 	for edge in listEdges:
 		stateData.append(waitingTracker[edge])
 	stateData = np.array(stateData)
+	stateData = stateData.reshape(1, -1)
 	# print 'stateData = ', stateData
 	stateSubID = int(dictClusterObjects[currHod][phase].predict(stateData))
 	# print 'subStateID = ', stateSubID
@@ -217,7 +219,7 @@ currStateID = 0
 lastStateID = 0
 
 dynamic = 1
-totalDays = 60  ###跑60天
+totalDays = 7  ###跑的天数
 
 # learning rates and discount factors
 gamma = 0.95 # to do - drop gamma down a little bit?
@@ -297,7 +299,7 @@ for day in range(totalDays):
 			# ================ cum waiting time in minutes
 
 			for lane in listLanes:
-				laneWaitingTracker[lane] = traci.lane.getWaitingTime(str(lane))/60
+				laneWaitingTracker[lane] = traci.lane.getWaitingTime(str(lane))/60  ###getWaitingTime() Returns the waiting time for all vehicles on the lane
 
 			for edge in waitingTracker.keys():
 				waitingTracker[edge] = laneWaitingTracker[str(edge) + '_' + str(0)] + laneWaitingTracker[str(edge) + '_' + str(1)]
@@ -397,7 +399,7 @@ for day in range(totalDays):
 
 	dfObjVals.columns = ['hour', 'day ' + str(day)]
 	dfObjVals['hour'] = dfObjVals['hour']/(1.0*secondsInHour)
-	dfObjVals.to_csv('dfObjVals' + str(day) + '.csv')
+	# dfObjVals.to_csv('dfObjVals' + str(day) + '.csv')
 
 	dfMean = dfObjVals.mean(axis=0)
 	print 'dfMean = ', dfMean
@@ -422,8 +424,9 @@ for day in range(totalDays):
 	else:
 		dfObjValsSummaryMaster = dfObjValsSummaryMaster.append(df, ignore_index=True)	
 		dfObjValsSummaryMaster.columns = ['day', 'mean', 'median', 'min']
-	
-	dfObjValsSummaryMaster.to_csv('dfObjValsSummaryMaster' + str(day) + '.csv')
+		
+	if day == totalDays - 1:
+		dfObjValsSummaryMaster.to_csv('dfObjValsSummaryMaster' + str(day) + '.csv')
 
 	plt.subplot(3,1,1)
 	plt.plot(dfObjValsSummaryMaster['day'], dfObjValsSummaryMaster['mean'], color = 'green', label = 'mean')
@@ -457,19 +460,19 @@ for day in range(totalDays):
 		dfObjValsMaster = dfObjValsMaster.merge(dfObjVals, on = 'hour', how = 'outer')
 
 
-	dfObjValsMaster.to_csv('dfObjValsMaster' + str(day) + '.csv')
+	# dfObjValsMaster.to_csv('dfObjValsMaster' + str(day) + '.csv')
 
 	dfObjValsMaster.plot(x = 'hour')
 	plt.xlabel('hour')
 	plt.title('Objective Function Values')
 
-	if dynamic:
-		dfActions.columns = ['currHod', 'currSod', 'lastStateID', 'lastObjValue', 'lastAction', 'currStateID', 'currObjValue', 'action']
-		dfActions.to_csv('dfActions' + str(day) + '.csv')
+	# if dynamic:
+	# 	dfActions.columns = ['currHod', 'currSod', 'lastStateID', 'lastObjValue', 'lastAction', 'currStateID', 'currObjValue', 'action']
+		# dfActions.to_csv('dfActions' + str(day) + '.csv')
 
-	dfQueueTracker.columns = ['hour', 'south', 'north', 'west', 'east']
-	dfQueueTracker['hour'] = dfQueueTracker['hour']/(1.0*secondsInHour)
-	dfQueueTracker.to_csv('dfQueueTracker' + str(day) + '.csv')
+	# dfQueueTracker.columns = ['hour', 'south', 'north', 'west', 'east']
+	# dfQueueTracker['hour'] = dfQueueTracker['hour']/(1.0*secondsInHour)
+	# dfQueueTracker.to_csv('dfQueueTracker' + str(day) + '.csv')
 
 	# for i in ['south', 'north', 'west', 'east']:
 	# 	dfQueueTracker[i] = pd.ewma(dfQueueTracker[i], span = 2400)
@@ -477,9 +480,9 @@ for day in range(totalDays):
 	# plt.xlabel('hour')
 	# plt.title('Queue Tracker on day '+ str(day))
 
-	dfNumVehiclesTracker.columns = ['hour', 'south', 'north', 'west', 'east']
-	dfNumVehiclesTracker['hour'] = dfNumVehiclesTracker['hour']/(1.0*secondsInHour)
-	dfNumVehiclesTracker.to_csv('dfQueueTracker' + str(day) + '.csv')
+	# dfNumVehiclesTracker.columns = ['hour', 'south', 'north', 'west', 'east']
+	# dfNumVehiclesTracker['hour'] = dfNumVehiclesTracker['hour']/(1.0*secondsInHour)
+	# dfNumVehiclesTracker.to_csv('dfQueueTracker' + str(day) + '.csv')
 
 	# for i in ['south', 'north', 'west', 'east']:
 	# 	dfNumVehiclesTracker[i] = pd.ewma(dfNumVehiclesTracker[i], span = 2400)
@@ -487,9 +490,9 @@ for day in range(totalDays):
 	# plt.xlabel('hour')
 	# plt.title('Number Vehicles on Edge Tracker on day '+ str(day))
 
-	dfWaitingTracker.columns = ['hour','south', 'north', 'west', 'east']
-	dfWaitingTracker['hour'] = dfWaitingTracker['hour']/(1.0*secondsInHour)
-	dfWaitingTracker.to_csv('dfWaitingTracker' + str(day) + '.csv')
+	# dfWaitingTracker.columns = ['hour','south', 'north', 'west', 'east']
+	# dfWaitingTracker['hour'] = dfWaitingTracker['hour']/(1.0*secondsInHour)
+	# dfWaitingTracker.to_csv('dfWaitingTracker' + str(day) + '.csv')
 
 	# for i in ['south', 'north', 'west', 'east']:
 	# 	dfWaitingTracker[i] = pd.ewma(dfWaitingTracker[i], span = 2400)
@@ -498,14 +501,14 @@ for day in range(totalDays):
 	# plt.title('Cumulative Minutes Waited For Stopped Vehicles on day '+ str(day))
 
 
-# 	print 'QValues = ', QValues
-	np.savetxt('QValues' + str(day) +'.txt', QValues)
-# 	print 'QProbs = ', QProbs
-	np.savetxt('QProbs' + str(day) +'.txt', QProbs)
-# 	print 'QAlphas = ', QAlphas
-	np.savetxt('QAlphas' + str(day) + '.txt', QAlphas)
-# 	print 'QCounts = ', QCounts
-	np.savetxt('QCounts' + str(day) + '.txt', QCounts)
+# # 	print 'QValues = ', QValues
+# 	np.savetxt('QValues' + str(day) +'.txt', QValues)
+# # 	print 'QProbs = ', QProbs
+# 	np.savetxt('QProbs' + str(day) +'.txt', QProbs)
+# # 	print 'QAlphas = ', QAlphas
+# 	np.savetxt('QAlphas' + str(day) + '.txt', QAlphas)
+# # 	print 'QCounts = ', QCounts
+# 	np.savetxt('QCounts' + str(day) + '.txt', QCounts)
 
 	plt.show()
 
