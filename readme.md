@@ -27,5 +27,52 @@ day	 mean	        median	        min
 
 
 
+## 2018.12.1号的需求
+### 1.真实数据：使用 sumo 的真实数据，获得真实数据，模拟一个真实的sumo接口; 真实数据 -> 转化成仿真初始状态
+### 2.算法增加给3，4个方案; rush hour 
+### 3.毕业论文调整 - 改下题目：单交叉口信号灯智能优化与策略调控系统的设计与实现 - 
+### 4.不同的交叉路口的情况
+### 4. 算法计算方式？待讨论
+       (1) 离线计算：算法离线运行，算出信号灯控制配置方案xml
+       (2) 在线计算： 分布式并行：前端 -> 选择路口 -> 选择单路口优化算法 -> 
 
 
+
+
+## 近期工作to-do
+1. 真实数据格式 => 仿真数据 格式的转换
+   - sumo 中有个工具： DFROUTER => 可以输入 road map 和 induction loop definitions、induction loop measures 文件，来产生交通需求文件 
+
+   [DFROUTER](http://sumo.sourceforge.net/userdoc/Demand/Routes_from_Observation_Points.html)
+  
+  使用方法，直接调用bin/目录下的可执行文件：
+  ```
+  dfrouter -n ../docs/examples/dfrouter/input_tri.net.xml  -d ../docs/examples/dfrouter/input_tri.det.xml -f ../docs/examples/dfrouter/input_tri_flows.txt  -o ouput_car.rou.xml --emitters-output output_car.emit.xml
+  ```
+
+
+2. 模拟真实数据，使用真实数据，进行单路口信号灯优化流程
+
+
+3. 之后整个系统的架构、web系统的设计
+  - 功能1 ： 线上（线下）计算单路口优化方案 => 单路口信号灯配时策略 => 线上跑单路口仿真流程 
+     结果：light id -> 多个方案配置
+  
+  - 模型训练（线下）产出方案 ：
+
+  - 功能2: 多路口优化
+
+  - 功能3: 新修条路等改变交通环境情况，对交通的影响
+
+  - 功能4: 应急疏导：出现交通管制时，进行快速的红绿灯调控
+  
+  - 4种单路口最优配时策略 => 调整一参数组合 => 得到40种方案多路口最优配时策略 => 
+
+
+
+
+
+https://github.com/tyw66/SPSA-algorithm/blob/master/main.py
+
+
+单路口方案的输出格式：当时的交通流量 + 信号灯配时xml 

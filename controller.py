@@ -18,7 +18,7 @@ if 'SUMO_HOME' in os.environ:
 else:   
      sys.exit("please declare environment variable 'SUMO_HOME'")
 
-sumoBinary = "/Users/shaw/Desktop/Simulation/sumo-git/bin/sumo"
+sumoBinary = "/Users/shaw/Documents/sumo-0_32_0/bin/sumo"
 
 
 import subprocess

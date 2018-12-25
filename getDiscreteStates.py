@@ -102,6 +102,7 @@ numwaitingBuckets = 3
 laneQueueTracker = {}
 laneWaitingTracker = {}
 laneNumVehiclesTracker = {}
+
 # laneMeanSpeedTracker = {}
 for lane in listLanes:
 	laneQueueTracker[lane] = 0
